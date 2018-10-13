@@ -12,9 +12,32 @@ scr_size = (width,height) = (600,150)
 FPS = 60
 gravity = 0.6
 
+
+################################################################################
+dino_left = 40 #const
+dino_right = 84 #const
+dino_top = 0
+dino_bottom = 0
+################################################################################
+bird_left = 0
+bird_right = 0
+bird_top = 70 #const
+bird_bottom = 110 #const
+################################################################################
+cact1_left = 0
+cact1_right = 0
+cact1_top = 0 #const
+cact1_bottom = 0 #const
+################################################################################
+cact2_left = 0
+cact2_right = 0
+cact2_top = 0 #const
+cact2_bottom = 0 #const
+################################################################################
+
 black = (0,0,0)
 white = (255,255,255)
-background_col = (235,235,235)
+background_col = (255,231,170)
 
 high_score = 0
 
@@ -181,6 +204,10 @@ class Dino():
                     checkPoint_sound.play()
 
         self.counter = (self.counter + 1)
+        dino_left = self.rect.left
+        dino_right = self.rect.right
+        dino_top = self.rect.top
+        dino_bottom = self.rect.bottom
 
 class Cactus(pygame.sprite.Sprite):
     def __init__(self,speed=5,sizex=-1,sizey=-1):
@@ -204,8 +231,9 @@ class Ptera(pygame.sprite.Sprite):
     def __init__(self,speed=5,sizex=-1,sizey=-1):
         pygame.sprite.Sprite.__init__(self,self.containers)
         self.images,self.rect = load_sprite_sheet('ptera.png',2,1,sizex,sizey,-1)
-        self.ptera_height = [height*0.82,height*0.75,height*0.60]
-        self.rect.centery = self.ptera_height[random.randrange(0,3)]
+        #self.ptera_height = [height*0.82,height*0.75,height*0.60]
+        self.ptera_height = [height*0.60]
+        self.rect.centery = self.ptera_height[0]
         self.rect.left = width + self.rect.width
         self.image = self.images[0]
         self.movement = [-1*speed,0]
@@ -216,11 +244,17 @@ class Ptera(pygame.sprite.Sprite):
         screen.blit(self.image,self.rect)
 
     def update(self):
+        global bird_left
+        global bird_right
         if self.counter % 10 == 0:
             self.index = (self.index+1)%2
         self.image = self.images[self.index]
         self.rect = self.rect.move(self.movement)
         self.counter = (self.counter + 1)
+        #############################
+        bird_left = self.rect.left
+        bird_right = self.rect.right
+        #############################
         if self.rect.right < 0:
             self.kill()
 
@@ -340,6 +374,16 @@ def introscreen():
 
 def gameplay():
     global high_score
+    global bird_right
+    global bird_left
+    global cact1_left
+    global cact1_right
+    global cact2_left
+    global cact2_right
+    global dino_top
+    global dino_bottom
+    global game_speed
+    
     gamespeed = 4
     startMenu = False
     gameOver = False
@@ -425,17 +469,24 @@ def gameplay():
                             last_obstacle.empty()
                             last_obstacle.add(Cactus(gamespeed, 40, 40))
 
+            if(len(pteras) == 0):
+                bird_left = 0
+                bird_right = 0
+            print len(pteras), '   ', bird_left, '   ', bird_right, '   ', counter
+
             if len(pteras) == 0 and random.randrange(0,200) == 10 and counter > 500:
                 for l in last_obstacle:
                     if l.rect.right < width*0.8:
                         last_obstacle.empty()
                         last_obstacle.add(Ptera(gamespeed, 46, 40))
 
+
             if len(clouds) < 5 and random.randrange(0,300) == 10:
                 Cloud(width,random.randrange(height/5,height/2))
 
             playerDino.update()
             cacti.update()
+
             pteras.update()
             clouds.update()
             new_ground.update()
