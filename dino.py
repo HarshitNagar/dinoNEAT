@@ -16,30 +16,33 @@ gravity = 0.6
 ################################################################################
 dino_left = 40 #const
 dino_right = 84 #const
-dino_top = 0
-dino_bottom = 0
+dino_top = 0 #mapped
+dino_bottom = 0 #mapped
 ################################################################################
-bird_left = 0
-bird_right = 0
+bird_left = 0 #mapped
+bird_right = 0 #mapped
 bird_top = 70 #const
 bird_bottom = 110 #const
 ################################################################################
-cact1_left = 0
-cact1_right = 0
-cact1_top = 0 #const
-cact1_bottom = 0 #const
+cact_left = 0 #
+cact_right = 0 #
+cact_top = 107 #const
+cact_bottom = 147 #const
 ################################################################################
-cact2_left = 0
-cact2_right = 0
+#ONLY ONE CACTUS AT A TIME SO THIS IS ONLY FOR FUTURE ENHANCEMENT
+cact2_left = 0 #not mapped
+cact2_right = 0 #not mapped
 cact2_top = 0 #const
 cact2_bottom = 0 #const
 ################################################################################
+game_speed = 0 #mapped
+high_score = 0 #mapped
+################################################################################
+
 
 black = (0,0,0)
 white = (255,255,255)
 background_col = (255,231,170)
-
-high_score = 0
 
 screen = pygame.display.set_mode(scr_size)
 clock = pygame.time.Clock()
@@ -164,6 +167,11 @@ class Dino():
             self.isJumping = False
 
     def update(self):
+        global dino_top
+        global dino_bottom
+        global dino_right
+        global dino_left
+
         if self.isJumping:
             self.movement[1] = self.movement[1] + gravity
 
@@ -199,9 +207,9 @@ class Dino():
 
         if not self.isDead and self.counter % 7 == 6 and self.isBlinking == False:
             self.score += 1
-            if self.score % 100 == 0 and self.score != 0:
-                if pygame.mixer.get_init() != None:
-                    checkPoint_sound.play()
+            #if self.score % 100 == 0 and self.score != 0:
+                #if pygame.mixer.get_init() != None:
+                #    checkPoint_sound.play()
 
         self.counter = (self.counter + 1)
         dino_left = self.rect.left
@@ -210,6 +218,10 @@ class Dino():
         dino_bottom = self.rect.bottom
 
 class Cactus(pygame.sprite.Sprite):
+    global cact_top
+    global cact_bottom
+    global cact_left
+    global cact_right
     def __init__(self,speed=5,sizex=-1,sizey=-1):
         pygame.sprite.Sprite.__init__(self,self.containers)
         self.images,self.rect = load_sprite_sheet('cacti-small.png',3,1,sizex,sizey,-1)
@@ -223,7 +235,8 @@ class Cactus(pygame.sprite.Sprite):
 
     def update(self):
         self.rect = self.rect.move(self.movement)
-
+        cact_right = self.rect.right
+        cact_left = self.rect.left
         if self.rect.right < 0:
             self.kill()
 
@@ -383,7 +396,7 @@ def gameplay():
     global dino_top
     global dino_bottom
     global game_speed
-    
+
     gamespeed = 4
     startMenu = False
     gameOver = False
@@ -434,8 +447,8 @@ def gameplay():
                         if event.key == pygame.K_SPACE:
                             if playerDino.rect.bottom == int(0.98*height):
                                 playerDino.isJumping = True
-                                if pygame.mixer.get_init() != None:
-                                    jump_sound.play()
+                                #if pygame.mixer.get_init() != None:
+                                #    jump_sound.play()
                                 playerDino.movement[1] = -1*playerDino.jumpSpeed
 
                         if event.key == pygame.K_DOWN:
@@ -449,32 +462,38 @@ def gameplay():
                 c.movement[0] = -1*gamespeed
                 if pygame.sprite.collide_mask(playerDino,c):
                     playerDino.isDead = True
-                    if pygame.mixer.get_init() != None:
-                        die_sound.play()
+                    #if pygame.mixer.get_init() != None:
+                    #    die_sound.play()
 
             for p in pteras:
                 p.movement[0] = -1*gamespeed
                 if pygame.sprite.collide_mask(playerDino,p):
                     playerDino.isDead = True
-                    if pygame.mixer.get_init() != None:
-                        die_sound.play()
+                    #if pygame.mixer.get_init() != None:
+                    #    die_sound.play()
 
-            if len(cacti) < 2:
-                if len(cacti) == 0:
-                    last_obstacle.empty()
-                    last_obstacle.add(Cactus(gamespeed,40,40))
-                else:
-                    for l in last_obstacle:
-                        if l.rect.right < width*0.7 and random.randrange(0,50) == 10:
-                            last_obstacle.empty()
-                            last_obstacle.add(Cactus(gamespeed, 40, 40))
+
+            if len(cacti) == 0:
+                last_obstacle.empty()
+                last_obstacle.add(Cactus(gamespeed,40,40))
+
+
+            #if len(cacti) < 2:
+            #    if len(cacti) == 0:
+            #        last_obstacle.empty()
+            #        last_obstacle.add(Cactus(gamespeed,40,40))
+            #    else:
+            #        for l in last_obstacle:
+            #            if l.rect.right < width*0.7 and random.randrange(0,50) == 10:
+            #                last_obstacle.empty()
+            #                last_obstacle.add(Cactus(gamespeed, 40, 40))
 
             if(len(pteras) == 0):
                 bird_left = 0
                 bird_right = 0
-            print len(pteras), '   ', bird_left, '   ', bird_right, '   ', counter
+            #print len(pteras), '   ', bird_left, '   ', bird_right, '   ', counter
 
-            if len(pteras) == 0 and random.randrange(0,200) == 10 and counter > 500:
+            if len(pteras) == 0 and random.randrange(0,200) == 10 and counter > 5:
                 for l in last_obstacle:
                     if l.rect.right < width*0.8:
                         last_obstacle.empty()
@@ -516,8 +535,10 @@ def gameplay():
             if counter%700 == 699:
                 new_ground.speed -= 1
                 gamespeed += 1
+            game_speed = gamespeed
 
             counter = (counter + 1)
+            #print 'game speed = ', game_speed
 
         if gameQuit:
             break
