@@ -4,7 +4,12 @@ import os
 import sys
 import pygame
 import random
+from pykeyboard import PyKeyboard
+import pyautogui as pui
 from pygame import *
+from time import sleep
+
+keyboard = PyKeyboard()
 
 pygame.init()
 
@@ -207,9 +212,9 @@ class Dino():
 
         if not self.isDead and self.counter % 7 == 6 and self.isBlinking == False:
             self.score += 1
-            #if self.score % 100 == 0 and self.score != 0:
-                #if pygame.mixer.get_init() != None:
-                #    checkPoint_sound.play()
+            if self.score % 100 == 0 and self.score != 0:
+                if pygame.mixer.get_init() != None:
+                    checkPoint_sound.play()
 
         self.counter = (self.counter + 1)
         dino_left = self.rect.left
@@ -364,7 +369,7 @@ def introscreen():
                 if event.type == pygame.QUIT:
                     return True
                 if event.type == pygame.KEYDOWN:
-                    if event.key == pygame.K_SPACE or event.key == pygame.K_UP:
+                    if event.key == pygame.K_w or event.key == pygame.K_UP:
                         temp_dino.isJumping = True
                         temp_dino.isBlinking = False
                         temp_dino.movement[1] = -1*temp_dino.jumpSpeed
@@ -438,39 +443,41 @@ def gameplay():
                 gameQuit = True
                 gameOver = True
             else:
+
                 for event in pygame.event.get():
+
                     if event.type == pygame.QUIT:
                         gameQuit = True
                         gameOver = True
 
                     if event.type == pygame.KEYDOWN:
-                        if event.key == pygame.K_SPACE:
+                        if event.key == pygame.K_w:
                             if playerDino.rect.bottom == int(0.98*height):
                                 playerDino.isJumping = True
-                                #if pygame.mixer.get_init() != None:
-                                #    jump_sound.play()
+                                if pygame.mixer.get_init() != None:
+                                    jump_sound.play()
                                 playerDino.movement[1] = -1*playerDino.jumpSpeed
 
-                        if event.key == pygame.K_DOWN:
+                        if event.key == pygame.K_s:
                             if not (playerDino.isJumping and playerDino.isDead):
                                 playerDino.isDucking = True
 
                     if event.type == pygame.KEYUP:
-                        if event.key == pygame.K_DOWN:
+                        if event.key == pygame.K_s:
                             playerDino.isDucking = False
             for c in cacti:
                 c.movement[0] = -1*gamespeed
                 if pygame.sprite.collide_mask(playerDino,c):
                     playerDino.isDead = True
-                    #if pygame.mixer.get_init() != None:
-                    #    die_sound.play()
+                    if pygame.mixer.get_init() != None:
+                        die_sound.play()
 
             for p in pteras:
                 p.movement[0] = -1*gamespeed
                 if pygame.sprite.collide_mask(playerDino,p):
                     playerDino.isDead = True
-                    #if pygame.mixer.get_init() != None:
-                    #    die_sound.play()
+                    if pygame.mixer.get_init() != None:
+                        die_sound.play()
 
 
             if len(cacti) == 0:
@@ -540,6 +547,7 @@ def gameplay():
             counter = (counter + 1)
             #print 'game speed = ', game_speed
 
+
         if gameQuit:
             break
 
@@ -558,7 +566,7 @@ def gameplay():
                             gameQuit = True
                             gameOver = False
 
-                        if event.key == pygame.K_RETURN or event.key == pygame.K_SPACE:
+                        if event.key == pygame.K_RETURN or event.key == pygame.K_w:
                             gameOver = False
                             gameplay()
             highsc.update(high_score)
