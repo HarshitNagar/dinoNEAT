@@ -3,12 +3,12 @@ from __future__ import print_function
 import os
 import pickle
 
-import dino
+import dino3
 import visualize
 import neat
 
 runs_per_neat = 5
-simulation_seconds = 60.0
+max_score = 300
 
 def eval_genome(genome, config):
     net = neat.nn.FeedForwardNetwork.create(genome, config)
