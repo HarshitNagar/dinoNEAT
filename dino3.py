@@ -522,21 +522,6 @@ def gameplay(net, fitnesses):
                 if Y==0:
                     simulate_unduck(playerDino)
 
-                #    if event.type == pygame.KEYDOWN:
-                #        if event.key == pygame.K_w:
-                #            if playerDino.rect.bottom == int(0.98*height):
-                #                playerDino.isJumping = True
-                #                if pygame.mixer.get_init() != None:
-                #                    jump_sound.play()
-                #                playerDino.movement[1] = -1*playerDino.jumpSpeed
-                #
-                #        if event.key == pygame.K_s:
-                #            if not (playerDino.isJumping and playerDino.isDead):
-                #                playerDino.isDucking = True
-                #
-                #    if event.type == pygame.KEYUP:
-                #        if event.key == pygame.K_s:
-                #            playerDino.isDucking = False
             for c in cacti:
                 c.movement[0] = -1*gamespeed
                 if pygame.sprite.collide_mask(playerDino,c):
@@ -556,16 +541,6 @@ def gameplay(net, fitnesses):
                 last_obstacle.empty()
                 last_obstacle.add(Cactus(gamespeed,40,40))
 
-
-            #if len(cacti) < 2:
-            #    if len(cacti) == 0:
-            #        last_obstacle.empty()
-            #        last_obstacle.add(Cactus(gamespeed,40,40))
-            #    else:
-            #        for l in last_obstacle:
-            #            if l.rect.right < width*0.7 and random.randrange(0,50) == 10:
-            #                last_obstacle.empty()
-            #                last_obstacle.add(Cactus(gamespeed, 40, 40))
 
             if(len(pteras) == 0):
                 bird_left = 0
@@ -618,31 +593,6 @@ def gameplay(net, fitnesses):
 
             counter = (counter + 1)
 
-            '''
-            #print 'dino_left', dino_left #const
-            #print 'dino_right', dino_right #const
-            #print 'dino_top', dino_top #mapped
-            #print 'dino_bottom', dino_bottom #mapped
-            ####################################################################
-            #print 'bird_left', bird_left #mapped
-            #print 'bird_right', bird_right #mapped
-            #print 'bird_top', bird_top #const
-            #print 'bird_bottom', bird_bottom #const
-            #####################################################################
-            #print 'cact_left', cact_left #mapped
-            #print 'cact_right', cact_right #mapped
-            #print 'cact_top', cact_top #const
-            #print 'cact_bottom', cact_bottom #const
-            ####################################################################
-            #print 'game_speed', game_speed #mapped
-            #print 'cur_score', cur_score #mapped
-            #print '\n'
-            ####################################################################
-            #INPUTS
-            '''
-
-
-
         if gameQuit:
             break
 
@@ -676,48 +626,3 @@ def gameplay(net, fitnesses):
                 pygame.display.update()
             clock.tick(FPS)
             return min(fitnesses)
-
-
-    #pygame.quit()
-    #quit()
-
-def eval_genome(genome, config):
-    net = neat.nn.FeedForwardNetwork.create(genome, config)
-
-    fitnesses = []
-    isGameQuit = introscreen()
-
-    for runs in range(runs_per_net):
-        fitness = 0.0
-        if not isGameQuit:
-            return gameplay(net, fitnesses)
-
-
-def run():
-    local_dir = os.path.dirname(__file__)
-    config_path = os.path.join(local_dir, 'config-feedforward')
-    config = neat.Config(neat.DefaultGenome, neat.DefaultReproduction,
-                         neat.DefaultSpeciesSet, neat.DefaultStagnation,
-                         config_path)
-
-    pop = neat.Population(config)
-    stats = neat.StatisticsReporter()
-
-    pop.add_reporter(stats)
-    pop.add_reporter(neat.StdOutReporter(True))
-
-    pe = neat.ParallelEvaluator(4, eval_genome)
-    winner  = pop.run(pe.evaluate)
-
-    with open('winner-feedforward', 'wb') as f:
-        pickle.dump(winner, f)
-
-    print winner
-
-    pygame.quit()
-    quit()
-
-def main():
-    run()
-
-main()
