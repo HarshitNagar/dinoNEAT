@@ -6,10 +6,9 @@ import pickle
 #import visualize
 import neat
 
-runs_per_neat = 5
-simulation_seconds = 60.0
+runs_per_neat = 1
+simulation_seconds = 10.0
 
-import os
 import sys
 import pygame
 import random
@@ -226,6 +225,11 @@ class Dino():
         dino_right = self.rect.right
         dino_top = self.rect.top
         dino_bottom = self.rect.bottom
+    
+ #   def get_inputs(self):
+  #      return [dino_left-dino_right,  dino_top-dino_bottom , bird_left-bird_right,
+   #            bird_top-bird_bottom, cact_left-cact_right, cact_top-cact_bottom, 
+    #           cact_left-dino_right, bird_left-dino_right, game_speed]
 
 class Cactus(pygame.sprite.Sprite):
     global cact_top
@@ -467,7 +471,8 @@ def gameplay(net, fitnesses):
     while not gameQuit:
         while startMenu:
             pass
-        while not gameOver:
+            fit=0
+        while not gameOver or fit<10:
             if pygame.display.get_surface() == None:
                 print("Couldn't load display surface")
                 gameQuit = True
@@ -487,15 +492,16 @@ def gameplay(net, fitnesses):
                 i_fitness = cur_score + 0.0
                 i_gamespeed = gamespeed
 
-                inputs = [i_dino_bottom, i_dino_height, i_dino_width, \
-                          i_dist_cact, i_cact_width, i_cact_height, \
-                          i_dist_bird, i_bird_width, i_bird_bottom, \
-                          i_gamespeed]
-
+                inputs = [i_dino_bottom, i_dino_height, i_dino_width, 
+                         i_dist_cact, i_cact_width, i_cact_height, 
+                         i_dist_bird, i_bird_width, i_bird_bottom, 
+                         i_gamespeed]
+    
+               
                 action = net.activate(inputs)
 
-                X = action[0]
-                Y = action[1]
+                X = 1
+                Y = 0
 
                 if X>=0.5:
                     X=1
@@ -619,24 +625,24 @@ def gameplay(net, fitnesses):
             counter = (counter + 1)
 
 
-            print 'dino_left', dino_left #const
-            print 'dino_right', dino_right #const
-            print 'dino_top', dino_top #mapped
-            print 'dino_bottom', dino_bottom #mapped
+            print ('dino_left', dino_left )#const
+            print ('dino_right', dino_right) #const
+            print ('dino_top', dino_top) #mapped
+            print ('dino_bottom', dino_bottom) #mapped
             ####################################################################
-            print 'bird_left', bird_left #mapped
-            print 'bird_right', bird_right #mapped
-            print 'bird_top', bird_top #const
-            print 'bird_bottom', bird_bottom #const
+            print ('bird_left', bird_left) #mapped
+            print ('bird_right', bird_right) #mapped
+            print ('bird_top', bird_top) #const
+            print ('bird_bottom', bird_bottom) #const
             ####################################################################
-            print 'cact_left', cact_left #mapped
-            print 'cact_right', cact_right #mapped
-            print 'cact_top', cact_top #const
-            print 'cact_bottom', cact_bottom #const
+            print ('cact_left', cact_left) #mapped
+            print ('cact_right', cact_right) #mapped
+            print ('cact_top', cact_top) #const
+            print ('cact_bottom', cact_bottom) #const
             ####################################################################
-            print 'game_speed', game_speed #mapped
-            print 'cur_score', cur_score #mapped
-            print '\n'
+            print ('game_speed', game_speed) #mapped
+            print ('cur_score', cur_score) #mapped
+            print ('\n')
             ####################################################################
             #INPUTS
 
@@ -644,10 +650,10 @@ def gameplay(net, fitnesses):
 
         if gameQuit:
             break
-
+        fit=i_fitness
         while gameOver:
             fitnesses.append(i_fitness)
-
+            
             if pygame.display.get_surface() == None:
                 print("Couldn't load display surface")
                 gameQuit = True
@@ -684,13 +690,13 @@ def eval_genome(genome, config):
     net = neat.nn.FeedForwardNetwork.create(genome, config)
 
     fitnesses = []
+    
     isGameQuit = introscreen()
 
-    for runs in range(runs_per_net):
-        fitness = 0.0
-        if not isGameQuit:
-            return gameplay(net, fitnesses)
-
+    fitness = 0.0
+    if not isGameQuit:
+        return gameplay(net, fitnesses)
+    
 
 def run():
     local_dir = os.path.dirname(__file__)
@@ -704,15 +710,14 @@ def run():
 
     pop.add_reporter(stats)
     pop.add_reporter(neat.StdOutReporter(True))
-
-    pe = neat.ParallelEvaluator(4, eval_genome)
-    winner  = pop.run(pe.evaluate)
-
-    with open('winner-feedforward', 'wb') as f:
-        pickle.dump(winner, f)
-
-    print winner
-
+    eval_genome()
+#   pe = neat.ParallelEvaluator(1, eval_genome)
+#    winner  = pop.run(pe.evaluate)
+#
+ #   with open('winner-feedforward', 'wb') as f:
+  #      pickle.dump(winner, f)
+#
+ ##
     pygame.quit()
     quit()
 
