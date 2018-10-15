@@ -1,20 +1,25 @@
 
 
+
+import os
+import pickle
+#import visualize
+import neat
+
+runs_per_neat = 5
+simulation_seconds = 60.0
+
 import os
 import sys
 import pygame
 import random
-from pykeyboard import PyKeyboard
-import pyautogui as pui
 from pygame import *
 from time import sleep
-
-keyboard = PyKeyboard()
 
 pygame.init()
 
 scr_size = (width,height) = (600,150)
-FPS = 60
+FPS = 200
 gravity = 0.6
 
 
@@ -41,7 +46,7 @@ cact2_top = 0 #const
 cact2_bottom = 0 #const
 ################################################################################
 game_speed = 0 #mapped
-fitness = 0 #mapped
+cur_score = 0 #mapped
 ################################################################################
 
 
@@ -350,9 +355,9 @@ def introscreen():
     temp_dino.isBlinking = True
     gameStart = False
 
-    callout,callout_rect = load_image('call_out.png',196,45,-1)
-    callout_rect.left = width*0.05
-    callout_rect.top = height*0.4
+    #callout,callout_rect = load_image('call_out.png',196,45,-1)
+    #callout_rect.left = width*0.05
+    #callout_rect.top = height*0.4
 
     temp_ground,temp_ground_rect = load_sprite_sheet('ground.png',15,1,-1,-1,-1)
     temp_ground_rect.left = width/20
@@ -410,7 +415,7 @@ def simulate_unduck(playerDino):
     return
 
 
-def gameplay():
+def gameplay(net, fitnesses):
     global high_score
     global bird_right
     global bird_left
@@ -421,7 +426,7 @@ def gameplay():
     global dino_top
     global dino_bottom
     global game_speed
-    global fitness
+    global cur_score
 
     X = 0 #jump when 1 not jump when 0
     Y = 0 #duck when 1 not duck when 0
@@ -468,6 +473,39 @@ def gameplay():
                 gameQuit = True
                 gameOver = True
             else:
+
+                #INPUTS
+                i_dino_bottom = height - dino_bottom
+                i_dino_height = dino_bottom - dino_top
+                i_dino_width = dino_right - dino_left
+                i_dist_cact = cact_left - dino_right
+                i_cact_width = cact_right - cact_left
+                i_cact_height = cact_bottom - cact_top
+                i_dist_bird = bird_left - dino_right
+                i_bird_width = bird_right - bird_left
+                i_bird_bottom = height - bird_bottom
+                i_fitness = cur_score + 0.0
+                i_gamespeed = gamespeed
+
+                inputs = [i_dino_bottom, i_dino_height, i_dino_width, \
+                          i_dist_cact, i_cact_width, i_cact_height, \
+                          i_dist_bird, i_bird_width, i_bird_bottom, \
+                          i_gamespeed]
+
+                action = net.activate(inputs)
+
+                X = action[0]
+                Y = action[1]
+
+                if X>=0.5:
+                    X=1
+                else:
+                    X=0
+                if Y>=0.5:
+                    Y=1
+                else:
+                    Y=0
+
 
                 for event in pygame.event.get():
 
@@ -571,7 +609,7 @@ def gameplay():
                 if playerDino.score > high_score:
                     high_score = playerDino.score
 
-            fitness = playerDino.score
+            cur_score = playerDino.score
 
             if counter%700 == 699:
                 new_ground.speed -= 1
@@ -597,27 +635,19 @@ def gameplay():
             print 'cact_bottom', cact_bottom #const
             ####################################################################
             print 'game_speed', game_speed #mapped
-            print 'fitness', fitness #mapped
+            print 'cur_score', cur_score #mapped
             print '\n'
             ####################################################################
             #INPUTS
-            i_dino_bottom = height - dino_bottom
-            i_dino_height = dino_bottom - dino_top
-            i_dino_width = dino_right - dino_left
-            i_dist_cact = cact_left - dino_right
-            i_cact_width = cact_right - cact_left
-            i_cact_height = cact_bottom - cact_top
-            i_dist_bird = bird_left - dino_right
-            i_bird_width = bird_right - bird_left
-            i_bird_bottom = height - bird_bottom
-            i_fitness = fitness + 0.0
-            i_gamespeed = gamespeed
+
 
 
         if gameQuit:
             break
 
         while gameOver:
+            fitnesses.append(i_fitness)
+
             if pygame.display.get_surface() == None:
                 print("Couldn't load display surface")
                 gameQuit = True
@@ -632,9 +662,6 @@ def gameplay():
                             gameQuit = True
                             gameOver = False
 
-                gameOver = False
-                gameplay()
-
                         #if event.key == pygame.K_RETURN or event.key == pygame.K_w:
                         #    gameOver = False
                         #    gameplay()
@@ -647,13 +674,49 @@ def gameplay():
                     screen.blit(HI_image,HI_rect)
                 pygame.display.update()
             clock.tick(FPS)
+            return min(fitnesses)
+
+
+    #pygame.quit()
+    #quit()
+
+def eval_genome(genome, config):
+    net = neat.nn.FeedForwardNetwork.create(genome, config)
+
+    fitnesses = []
+    isGameQuit = introscreen()
+
+    for runs in range(runs_per_net):
+        fitness = 0.0
+        if not isGameQuit:
+            return gameplay(net, fitnesses)
+
+
+def run():
+    local_dir = os.path.dirname(__file__)
+    config_path = os.path.join(local_dir, 'config-feedforward')
+    config = neat.Config(neat.DefaultGenome, neat.DefaultReproduction,
+                         neat.DefaultSpeciesSet, neat.DefaultStagnation,
+                         config_path)
+
+    pop = neat.Population(config)
+    stats = neat.StatisticsReporter()
+
+    pop.add_reporter(stats)
+    pop.add_reporter(neat.StdOutReporter(True))
+
+    pe = neat.ParallelEvaluator(4, eval_genome)
+    winner  = pop.run(pe.evaluate)
+
+    with open('winner-feedforward', 'wb') as f:
+        pickle.dump(winner, f)
+
+    print winner
 
     pygame.quit()
     quit()
 
 def main():
-    isGameQuit = introscreen()
-    if not isGameQuit:
-        gameplay()
+    run()
 
 main()
