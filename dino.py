@@ -404,10 +404,9 @@ def gameplay():
     global game_speed
     global fitness
 
-    X = 1 #jumpPress
-    Xbar = 0 #jumpRelease
-    Y = 0 #duckPress
-    Ybar = 0 #duckRelease
+    X = 0 #jump when 1 not jump when 0
+    Y = 0 #duck when 1 not duck when 0
+
 
     gamespeed = 4
     startMenu = False
@@ -458,7 +457,7 @@ def gameplay():
                         gameOver = True
 
                 X=1
-                Y=1    
+                Y=1
                 if X==1:
                     if playerDino.rect.bottom == int(0.98*height):
                         playerDino.isJumping = True
