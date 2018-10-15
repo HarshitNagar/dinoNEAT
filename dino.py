@@ -10,11 +10,12 @@ import random
 from pygame import *
 from time import sleep
 from math import exp
+import threading
 
 pygame.init()
 
 scr_size = (width,height) = (600,150)
-FPS = 60
+FPS = 90000
 gravity = 0.6
 
 runs_per_net = 5
