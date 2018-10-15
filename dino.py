@@ -500,8 +500,8 @@ def gameplay(net, fitnesses):
                
                 action = net.activate(inputs)
 
-                X = 1
-                Y = 0
+                X = action[0]
+                Y = action[1]
 
                 if X>=0.5:
                     X=1
@@ -710,14 +710,15 @@ def run():
 
     pop.add_reporter(stats)
     pop.add_reporter(neat.StdOutReporter(True))
-    eval_genome()
-#   pe = neat.ParallelEvaluator(1, eval_genome)
-#    winner  = pop.run(pe.evaluate)
-#
- #   with open('winner-feedforward', 'wb') as f:
-  #      pickle.dump(winner, f)
-#
- ##
+
+    pe = neat.ParallelEvaluator(1, eval_genome)
+    winner  = pop.run(pe.evaluate)
+
+    with open('winner-feedforward', 'wb') as f:
+        pickle.dump(winner, f)
+
+    print (winner)
+
     pygame.quit()
     quit()
 
