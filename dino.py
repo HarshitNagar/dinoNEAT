@@ -41,14 +41,14 @@ cact2_top = 0 #const
 cact2_bottom = 0 #const
 ################################################################################
 game_speed = 0 #mapped
-high_score = 0 #mapped
+fitness = 0 #mapped
 ################################################################################
 
 
 black = (0,0,0)
 white = (255,255,255)
 background_col = (255,231,170)
-
+high_score = 0
 screen = pygame.display.set_mode(scr_size)
 clock = pygame.time.Clock()
 pygame.display.set_caption("T-Rex Rush")
@@ -225,8 +225,7 @@ class Dino():
 class Cactus(pygame.sprite.Sprite):
     global cact_top
     global cact_bottom
-    global cact_left
-    global cact_right
+
     def __init__(self,speed=5,sizex=-1,sizey=-1):
         pygame.sprite.Sprite.__init__(self,self.containers)
         self.images,self.rect = load_sprite_sheet('cacti-small.png',3,1,sizex,sizey,-1)
@@ -239,6 +238,8 @@ class Cactus(pygame.sprite.Sprite):
         screen.blit(self.image,self.rect)
 
     def update(self):
+        global cact_left
+        global cact_right
         self.rect = self.rect.move(self.movement)
         cact_right = self.rect.right
         cact_left = self.rect.left
@@ -401,6 +402,12 @@ def gameplay():
     global dino_top
     global dino_bottom
     global game_speed
+    global fitness
+
+    X = 1 #jumpPress
+    Xbar = 0 #jumpRelease
+    Y = 0 #duckPress
+    Ybar = 0 #duckRelease
 
     gamespeed = 4
     startMenu = False
@@ -450,21 +457,38 @@ def gameplay():
                         gameQuit = True
                         gameOver = True
 
-                    if event.type == pygame.KEYDOWN:
-                        if event.key == pygame.K_w:
-                            if playerDino.rect.bottom == int(0.98*height):
-                                playerDino.isJumping = True
-                                if pygame.mixer.get_init() != None:
-                                    jump_sound.play()
-                                playerDino.movement[1] = -1*playerDino.jumpSpeed
+                X=1
+                Y=1    
+                if X==1:
+                    if playerDino.rect.bottom == int(0.98*height):
+                        playerDino.isJumping = True
+                        if pygame.mixer.get_init() != None:
+                            jump_sound.play()
+                        playerDino.movement[1] = -1*playerDino.jumpSpeed
+                        X=0
 
-                        if event.key == pygame.K_s:
-                            if not (playerDino.isJumping and playerDino.isDead):
-                                playerDino.isDucking = True
+                if Y==1:
+                    if not (playerDino.isJumping and playerDino.isDead):
+                        playerDino.isDucking = True
 
-                    if event.type == pygame.KEYUP:
-                        if event.key == pygame.K_s:
-                            playerDino.isDucking = False
+                if Y==0:
+                    playerDino.isDucking = False
+
+                #    if event.type == pygame.KEYDOWN:
+                #        if event.key == pygame.K_w:
+                #            if playerDino.rect.bottom == int(0.98*height):
+                #                playerDino.isJumping = True
+                #                if pygame.mixer.get_init() != None:
+                #                    jump_sound.play()
+                #                playerDino.movement[1] = -1*playerDino.jumpSpeed
+                #
+                #        if event.key == pygame.K_s:
+                #            if not (playerDino.isJumping and playerDino.isDead):
+                #                playerDino.isDucking = True
+                #
+                #    if event.type == pygame.KEYUP:
+                #        if event.key == pygame.K_s:
+                #            playerDino.isDucking = False
             for c in cacti:
                 c.movement[0] = -1*gamespeed
                 if pygame.sprite.collide_mask(playerDino,c):
@@ -539,13 +563,47 @@ def gameplay():
                 if playerDino.score > high_score:
                     high_score = playerDino.score
 
+            fitness = playerDino.score
+
             if counter%700 == 699:
                 new_ground.speed -= 1
                 gamespeed += 1
             game_speed = gamespeed
 
             counter = (counter + 1)
-            #print 'game speed = ', game_speed
+
+
+            print 'dino_left', dino_left #const
+            print 'dino_right', dino_right #const
+            print 'dino_top', dino_top #mapped
+            print 'dino_bottom', dino_bottom #mapped
+            ################################################################################
+            print 'bird_left', bird_left #mapped
+            print 'bird_right', bird_right #mapped
+            print 'bird_top', bird_top #const
+            print 'bird_bottom', bird_bottom #const
+            ################################################################################
+            print 'cact_left', cact_left #mapped
+            print 'cact_right', cact_right #mapped
+            print 'cact_top', cact_top #const
+            print 'cact_bottom', cact_bottom #const
+            ################################################################################
+            print 'game_speed', game_speed #mapped
+            print 'fitness', fitness #mapped
+            print '\n'
+            ################################################################################
+            #INPUTS
+            i_dino_bottom = height - dino_bottom
+            i_dino_height = dino_bottom - dino_top
+            i_dino_width = dino_right - dino_left
+            i_dist_cact = cact_left - dino_right
+            i_cact_width = cact_right - cact_left
+            i_cact_height = cact_bottom - cact_top
+            i_dist_bird = bird_left - dino_right
+            i_bird_width = bird_right - bird_left
+            i_bird_bottom = height - bird_bottom
+            i_fitness = fitness + 0.0
+            i_gamespeed = gamespeed
 
 
         if gameQuit:
