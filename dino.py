@@ -391,6 +391,25 @@ def introscreen():
         if temp_dino.isJumping == False and temp_dino.isBlinking == False:
             gameStart = True
 
+def simulate_duck(playerDino):
+    if not (playerDino.isJumping and playerDino.isDead):
+        playerDino.isDucking = True
+    return
+
+def simulate_jump(playerDino):
+    if playerDino.rect.bottom == int(0.98*height):
+        playerDino.isJumping = True
+        if pygame.mixer.get_init() != None:
+            jump_sound.play()
+        playerDino.movement[1] = -1*playerDino.jumpSpeed
+        X=0
+    return
+
+def simulate_unduck(playerDino):
+    playerDino.isDucking = False
+    return
+
+
 def gameplay():
     global high_score
     global bird_right
@@ -455,23 +474,15 @@ def gameplay():
                     if event.type == pygame.QUIT:
                         gameQuit = True
                         gameOver = True
-
-                X=1
-                Y=1
+                #X=1
                 if X==1:
-                    if playerDino.rect.bottom == int(0.98*height):
-                        playerDino.isJumping = True
-                        if pygame.mixer.get_init() != None:
-                            jump_sound.play()
-                        playerDino.movement[1] = -1*playerDino.jumpSpeed
-                        X=0
-
+                    simulate_jump(playerDino)
+                #Y=1
                 if Y==1:
-                    if not (playerDino.isJumping and playerDino.isDead):
-                        playerDino.isDucking = True
+                    simulate_duck(playerDino)
 
                 if Y==0:
-                    playerDino.isDucking = False
+                    simulate_unduck(playerDino)
 
                 #    if event.type == pygame.KEYDOWN:
                 #        if event.key == pygame.K_w:
@@ -521,7 +532,6 @@ def gameplay():
             if(len(pteras) == 0):
                 bird_left = 0
                 bird_right = 0
-            #print len(pteras), '   ', bird_left, '   ', bird_right, '   ', counter
 
             if len(pteras) == 0 and random.randrange(0,200) == 10 and counter > 5:
                 for l in last_obstacle:
@@ -535,7 +545,6 @@ def gameplay():
 
             playerDino.update()
             cacti.update()
-
             pteras.update()
             clouds.update()
             new_ground.update()
@@ -576,21 +585,21 @@ def gameplay():
             print 'dino_right', dino_right #const
             print 'dino_top', dino_top #mapped
             print 'dino_bottom', dino_bottom #mapped
-            ################################################################################
+            ####################################################################
             print 'bird_left', bird_left #mapped
             print 'bird_right', bird_right #mapped
             print 'bird_top', bird_top #const
             print 'bird_bottom', bird_bottom #const
-            ################################################################################
+            ####################################################################
             print 'cact_left', cact_left #mapped
             print 'cact_right', cact_right #mapped
             print 'cact_top', cact_top #const
             print 'cact_bottom', cact_bottom #const
-            ################################################################################
+            ####################################################################
             print 'game_speed', game_speed #mapped
             print 'fitness', fitness #mapped
             print '\n'
-            ################################################################################
+            ####################################################################
             #INPUTS
             i_dino_bottom = height - dino_bottom
             i_dino_height = dino_bottom - dino_top
@@ -623,9 +632,13 @@ def gameplay():
                             gameQuit = True
                             gameOver = False
 
-                        if event.key == pygame.K_RETURN or event.key == pygame.K_w:
-                            gameOver = False
-                            gameplay()
+                gameOver = False
+                gameplay()
+
+                        #if event.key == pygame.K_RETURN or event.key == pygame.K_w:
+                        #    gameOver = False
+                        #    gameplay()
+
             highsc.update(high_score)
             if pygame.display.get_surface() != None:
                 disp_gameOver_msg(retbutton_image,gameover_image)
