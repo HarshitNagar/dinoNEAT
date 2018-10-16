@@ -3,19 +3,17 @@ import os
 import pickle
 #import visualize
 import neat
-import os
 import sys
 import pygame
 import random
 from pygame import *
 from time import sleep
 from math import exp
-import threading
 
 pygame.init()
 
 scr_size = (width,height) = (600,150)
-FPS = 90000
+FPS = 140
 gravity = 0.6
 
 runs_per_net = 5
@@ -554,7 +552,7 @@ def run():
     winner  = pop.run(pe.evaluate)
     with open('winner-feedforward', 'wb') as f:
         pickle.dump(winner, f)
-    print winner
+    print winner 
     pygame.quit()
     quit()
 
